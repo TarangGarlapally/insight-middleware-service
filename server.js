@@ -1,7 +1,6 @@
 const http = require('http')
 const fs = require('fs')
 const express = require('express')
-const firebase = require('./firebase')
 const services = require('./services')
 
 var app = express()
