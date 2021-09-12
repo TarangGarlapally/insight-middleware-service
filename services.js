@@ -26,7 +26,7 @@ function convertArrayToFile(arr) {
 
 }
 
-module.exports.postMonthlyModelToFirebase = async function (model) {
+exports.postMonthlyModelToFirebase = async function (model) {
     var score = await getScore(model);
     // model.coef_ = [{ array: model.coef_[0] }];
     //model.coef_ = [Buffer.from(model.coef_[0])];
