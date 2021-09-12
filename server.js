@@ -42,7 +42,7 @@ app.get('/aggregate', function (req, res, next) {
 });
 
 
-app.post('/send-model', async (req, res) => {
-    score = await services.postMonthlyModelToFirebase(req.body)
-    res.json(req.body.email + "abc score:" + score)
+app.post('/send-model', (req, res) => {
+    services.postMonthlyModelToFirebase(req.body)
+    res.json("Successful")
 })
