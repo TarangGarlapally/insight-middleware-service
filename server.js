@@ -1,7 +1,6 @@
 const http = require('http')
 const fs = require('fs')
 const express = require('express')
-const firebase = require('./firebase')
 const services = require('./services')
 //const mod = require('./modules')
 
@@ -9,7 +8,7 @@ var admin = require('firebase-admin');
 const db = admin.firestore();
 
 var app = express()
-const port = 3000
+const port = process.env.PORT || 3000
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
@@ -87,7 +86,8 @@ app.get('/aggregate', async (req, res ) =>{
     const agg = await db.collection('aggregatedModels').doc('9-2021').set(max_model);
 });
 
-app.post('/send-model', async (req, res) => {
-    score = await services.postMonthlyModelToFirebase(req.body)
-    res.json(req.body.email + "abc score:" + score)
+
+app.post('/send-model', (req, res) => {
+    services.postMonthlyModelToFirebase(req.body)
+    res.json("Successful")
 })

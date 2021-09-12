@@ -23,4 +23,16 @@ const firebase = admin.initializeApp({
 //const db = admin.firestore();
 console.log("Firebase Service Initialized");
 
-module.exports = {firebase}
+// firebase.firestore().collection("monthlyModels").doc("4-2021").get().then(snap => {
+//     var buffer = snap.data().models[0].coef_[0];
+//     var arr = Array.prototype.slice.call(buffer, 0)
+//     console.log(arr)
+//     var c = 0;
+//     for (let index = 0; index < arr.length; index++) {
+//         if (arr[index] != 0)
+//             console.log(arr[index])
+//     }
+//     console.log(c)
+// })
+
+module.exports = firebase
