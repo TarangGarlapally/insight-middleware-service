@@ -11,3 +11,10 @@ module.exports.postMonthlyModelToFirebase = function (model) {
         });
 }
 
+// const getDoc=asyn(req,res,next)=>{
+//     const getData = db.collection('monthlyModels').doc('9-2021');
+//     const data = await getData.get();
+//     if (!data.exists) {
+//     console.log('No such document!');
+//     }   
+// }

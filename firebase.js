@@ -20,6 +20,7 @@ const firebase = admin.initializeApp({
     databaseURL: "https://pegasuschat-default-rtdb.firebaseio.com"
 });
 
+//const db = admin.firestore();
 console.log("Firebase Service Initialized");
 
-module.exports = firebase
+module.exports = {firebase}
