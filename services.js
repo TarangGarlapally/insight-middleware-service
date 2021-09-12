@@ -2,6 +2,8 @@ const firebase = require('./firebase')
 const axios = require('axios');
 const fs = require('fs');
 const fileOp = require('./fileOp');
+var admin = require('firebase-admin');
+const db = admin.firestore();
 
 function getScore(model) {
     return axios.post('https://project-insight-chat.herokuapp.com/get-score', model)
@@ -14,13 +16,12 @@ function getScore(model) {
         });
 }
 
-// const getDoc=asyn(req,res,next)=>{
-//     const getData = db.collection('monthlyModels').doc('9-2021');
-//     const data = await getData.get();
-//     if (!data.exists) {
-//     console.log('No such document!');
-//     }   
-// }
+var date = new Date();
+month_doc = (date.getMonth() + 1).toString() + "-" + date.getFullYear().toString();
+//month_doc='9-2021'
+//prevmonth_doc='8-2021'
+prevmonth_doc=(date.getMonth()).toString() + "-" + date.getFullYear().toString();
+
 
 function convertArrayToFile(arr) {
 
@@ -40,9 +41,7 @@ exports.postMonthlyModelToFirebase = async function (model) {
     model.score = score;
     console.log(score);
 
-    var date = new Date();
-    month_doc = (date.getMonth() + 1).toString() + "-" + date.getFullYear().toString();
-
+    
 
     var file = convertArrayToFile(model.coef_);
 
@@ -87,3 +86,86 @@ exports.postMonthlyModelToFirebase = async function (model) {
         })
 }
 
+getDoc = async function ()  {
+    
+    const getData = db.collection('monthlyModels').doc(month_doc);
+    const data = await getData.get();
+    if (!data.exists) {
+    console.log('No such document!');
+    }    
+    //console.log(data.data())
+    //return this.data
+    const obj=JSON.parse(JSON.stringify(data.data()))
+    
+    const objdata=obj.models
+    var arr=[]
+    objdata.forEach(function(x) { 
+        arr.push(x.score);
+    })
+    const max=Math.max(...arr)
+    objdata.forEach(function(x) { 
+        if(x.score==max){
+            maxData=x
+            //console.log(x);
+        }
+    })
+    //console.log(maxData)
+    
+        const getDataAgg = db.collection('aggregatedModels').doc(prevmonth_doc);
+        const dataAgg = await getDataAgg.get();
+        if (!dataAgg.exists) {
+            const agg = await db.collection('aggregatedModels').doc(month_doc).set(maxData);
+        }   
+    
+        const objAgg=JSON.parse(JSON.stringify(dataAgg.data()))
+        //console.log(dataAgg.data())
+        max_score=Math.max(maxData.score,objAgg.score);
+    
+        if(max_score==maxData.score){
+            max_model=maxData
+        }
+        else{
+            max_model=objAgg
+        }
+        //console.log(max_model);
+    
+        const agg = await db.collection('aggregatedModels').doc(month_doc).set(max_model);
+}
+removing=async function(){
+    const FieldValue = admin.firestore.FieldValue;
+    const getDataAgg_new = db.collection('aggregatedModels').doc(month_doc);
+    var upd = await getDataAgg_new.update({
+        email: FieldValue.delete(),
+        score:FieldValue.delete()
+      });
+    
+}
+// updating=async function(){
+//     const model = db.collection('aggregatedModels').doc(month_doc);
+//     const model_obj = await model.get();
+//     model_data=model_obj.data()
+// }
+get_best_model=async function(req,res,array){
+    const FieldValue = admin.firestore.FieldValue;
+    const getDataAgg_new = db.collection('aggregatedModels').doc(month_doc);
+    const dataAgg_new = await getDataAgg_new.get();
+    obj=dataAgg_new.data()
+    obj.coef_=array
+    //console.log(obj);
+    res.json(obj)
+    //res.send(obj)
+}
+
+get_fileDownload=async function(){
+    const model = db.collection('aggregatedModels').doc(month_doc);
+    const model_obj = await model.get();
+    model_data=model_obj.data()
+    var Filename = model_data.coef_
+    //console.log(Filename);
+    fileOp.fileDownload(Filename)
+
+}
+module.exports.getDoc=getDoc;
+module.exports.get_best_model=get_best_model;
+module.exports.removing=removing;
+module.exports.get_fileDownload=get_fileDownload;

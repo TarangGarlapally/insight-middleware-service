@@ -2,7 +2,7 @@ const http = require('http')
 const fs = require('fs')
 const express = require('express')
 const services = require('./services')
-//const mod = require('./modules')
+const file = require('./fileOp')
 
 var admin = require('firebase-admin');
 const db = admin.firestore();
@@ -31,59 +31,53 @@ app.listen(port, () => {
 
 
 app.get('/', (req, res) => {
+    
     res.json({ message: 'Hello world..' })
 })
 
 app.get('/get-best-model', (req, res) => {
-    res.json({ message: 'This API returns the best model' })
+    services.removing()
+
+    fs.readFile('localcoef.temporary.txt' ,function (err, data) {
+        if(err) throw err;
+            
+            data1=data.toString()
+            arr=data1.split(',').map(Number)
+            var array=[]
+            array=[arr]
+            myMethod(array)
+            //console.log(array);
+    });  
+    //console.log(array)
+
+    function myMethod(array){
+        fs.writeFile('localcoef.temporary.txt', '', function(){console.log('done')})
+        services.get_best_model(req,res,array) 
+    }
+
+    //var array=new Array()
+    // function myMethod(){
+    //     fs.readFile('localcoef.temporary.txt',function(err,data){
+    //         if(err) throw err;
+    //         data1=data.toString()
+    //         arr=data1.split(',').map(Number)
+    //         var array=[]
+    //         array=[arr]
+    //         //console.log(array)
+    //     })
+    //     return array
+    // }
+    // var array=myMethod()
+    // console.log(array);
+    //fs.writeFile('localcoef.temporary.txt', '', function(){console.log('done')})
+    //services.get_best_model(req,res) 
+      
 })
 
-var M1 = { colour: 'blue' };
-var M2 = { width: 100 };
 
 app.get('/aggregate', async (req, res ) =>{
-   
-    const getData = db.collection('monthlyModels').doc('9-2021');
-    const data = await getData.get();
-    if (!data.exists) {
-    console.log('No such document!');
-    }   
-    
-    const obj=JSON.parse(JSON.stringify(data.data()))
-    
-    const objdata=obj.models
-    var arr=[]
-    objdata.forEach(function(x) { 
-        arr.push(x.score);
-    })
-    const max=Math.max(...arr)
-    objdata.forEach(function(x) { 
-        if(x.score==max){
-            maxData=x
-            //console.log(x);
-        }
-    })
-    //console.log(maxData)
-    
-    const getDataAgg = db.collection('aggregatedModels').doc('8-2021');
-    const dataAgg = await getDataAgg.get();
-    if (!dataAgg.exists) {
-    console.log('No such document!');
-    }   
-
-    const objAgg=JSON.parse(JSON.stringify(dataAgg.data()))
-    //console.log(dataAgg.data())
-    max_score=Math.max(maxData.score,objAgg.score);
-
-    if(max_score==maxData.score){
-        max_model=maxData
-    }
-    else{
-        max_model=objAgg
-    }
-    console.log(max_model);
-
-    const agg = await db.collection('aggregatedModels').doc('9-2021').set(max_model);
+    services.getDoc()
+    services.get_fileDownload()
 });
 
 
