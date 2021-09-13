@@ -35,6 +35,7 @@ app.get('/', (req, res) => {
 app.get('/get-best-model', (req, res) => {
     //services.removing()
 
+    console.log("reading file");
     fs.readFile('localcoef.temporary.txt', function (err, data) {
         if (err) throw err;
 
@@ -42,8 +43,8 @@ app.get('/get-best-model', (req, res) => {
         arr = data1.split(',').map(Number)
         var array = []
         array = [arr]
+        console.log("reading complete");
         sending_coef(array)
-        //console.log(array);
     });
     //console.log(array)
 
@@ -57,7 +58,7 @@ app.get('/get-best-model', (req, res) => {
 
 app.get('/aggregate', async (req, res) => {
     services.getDoc()
-    services.get_fileDownload()
+    res.json({ message: "Aggregation started" })
 });
 
 

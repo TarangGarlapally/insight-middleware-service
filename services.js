@@ -20,7 +20,7 @@ var date = new Date();
 month_doc = (date.getMonth() + 1).toString() + "-" + date.getFullYear().toString();
 //month_doc='9-2021'
 //prevmonth_doc='8-2021'
-prevmonth_doc=(date.getMonth()).toString() + "-" + date.getFullYear().toString();
+prevmonth_doc = (date.getMonth()).toString() + "-" + date.getFullYear().toString();
 
 
 function convertArrayToFile(arr) {
@@ -41,7 +41,7 @@ exports.postMonthlyModelToFirebase = async function (model) {
     model.score = score;
     console.log(score);
 
-    
+
 
     var file = convertArrayToFile(model.coef_);
 
@@ -86,50 +86,56 @@ exports.postMonthlyModelToFirebase = async function (model) {
         })
 }
 
-getDoc = async function ()  {
-    
+getDoc = async function () {
+
     const getData = db.collection('monthlyModels').doc(month_doc);
     const data = await getData.get();
     if (!data.exists) {
-    console.log('No such document!');
-    }    
+        console.log('No such document!');
+    }
     //console.log(data.data())
     //return this.data
-    const obj=JSON.parse(JSON.stringify(data.data()))
-    
-    const objdata=obj.models
-    var arr=[]
-    objdata.forEach(function(x) { 
+    const obj = JSON.parse(JSON.stringify(data.data()))
+
+    const objdata = obj.models
+    var arr = []
+    objdata.forEach(function (x) {
         arr.push(x.score);
     })
-    const max=Math.max(...arr)
-    objdata.forEach(function(x) { 
-        if(x.score==max){
-            maxData=x
+    const max = Math.max(...arr)
+    objdata.forEach(function (x) {
+        if (x.score == max) {
+            maxData = x
             //console.log(x);
         }
     })
-    //console.log(maxData)
-    
-        const getDataAgg = db.collection('aggregatedModels').doc(prevmonth_doc);
-        const dataAgg = await getDataAgg.get();
-        if (!dataAgg.exists) {
-            const agg = await db.collection('aggregatedModels').doc(month_doc).set(maxData);
-        }   
-    
-        const objAgg=JSON.parse(JSON.stringify(dataAgg.data()))
+    console.log("max score:", maxData.score)
+
+    const getDataAgg = db.collection('aggregatedModels').doc(prevmonth_doc);
+    const dataAgg = await getDataAgg.get();
+    if (!dataAgg.exists) {
+        console.log("prev month doesn't exist");
+        const agg = await db.collection('aggregatedModels').doc(month_doc).set(maxData);
+        console.log("updated this months global model");
+    }
+    else {
+        console.log("prev month exists");
+        const objAgg = JSON.parse(JSON.stringify(dataAgg.data()))
         //console.log(dataAgg.data())
-        max_score=Math.max(maxData.score,objAgg.score);
-    
-        if(max_score==maxData.score){
-            max_model=maxData
+        max_score = Math.max(maxData.score, objAgg.score);
+
+        if (max_score == maxData.score) {
+            max_model = maxData
         }
-        else{
-            max_model=objAgg
+        else {
+            max_model = objAgg
         }
-        //console.log(max_model);
-    
+        console.log("Best score after comparing with prev:", max_model);
+
         const agg = await db.collection('aggregatedModels').doc(month_doc).set(max_model);
+    }
+
+    get_fileDownload()
 }
 // removing=async function(){
 //     const FieldValue = admin.firestore.FieldValue;
@@ -140,36 +146,38 @@ getDoc = async function ()  {
 //       });
 // }
 
-get_best_model=async function(req,res,array){
+get_best_model = async function (req, res, array) {
     const FieldValue = admin.firestore.FieldValue;
     const getDataAgg_new = db.collection('aggregatedModels').doc(month_doc);
     const dataAgg_new = await getDataAgg_new.get();
+    console.log("recieving model from firestore");
     //obj=dataAgg_new.data()
-    obj=JSON.parse(JSON.stringify(dataAgg_new.data()))
-    const obj1={
-        "classes_":obj.classes_,
-        "intercept_":obj.intercept_,
-        "n_iter_":obj.n_iter_,
-        "coef_":array
+    obj = JSON.parse(JSON.stringify(dataAgg_new.data()))
+    const obj1 = {
+        "classes_": obj.classes_,
+        "intercept_": obj.intercept_,
+        "n_iter_": obj.n_iter_,
+        "coef_": array
     }
     //obj.coef_=array
     //console.log(obj1);
     //res.json(obj1)
     //res.send({"result":"hi"})
+    console.log("sending response");
     res.send(obj1)
 }
 
-get_fileDownload=async function(){
+get_fileDownload = function () {
     const model = db.collection('aggregatedModels').doc(month_doc);
-    const model_obj = await model.get();
-    model_data=model_obj.data()
-    var Filename = model_data.coef_
-    //console.log(Filename);
-    fileOp.fileDownload(Filename)
+    model.get().then(model_obj => {
+        model_data = model_obj.data();
+        var Filename = model_data.coef_;
+        fileOp.fileDownload(Filename);
+    });
 
 }
-module.exports.getDoc=getDoc;
-module.exports.get_best_model=get_best_model;
+module.exports.getDoc = getDoc;
+module.exports.get_best_model = get_best_model;
 //module.exports.removing=removing;
-module.exports.get_fileDownload=get_fileDownload;
+module.exports.get_fileDownload = get_fileDownload;
 //module.exports.updating=updating;
