@@ -28,12 +28,12 @@ app.listen(port, () => {
 
 
 app.get('/', (req, res) => {
-
+    //services.updating()
     res.json({ message: 'Hello world..' })
 })
 
 app.get('/get-best-model', (req, res) => {
-    services.removing()
+    //services.removing()
 
     fs.readFile('localcoef.temporary.txt', function (err, data) {
         if (err) throw err;
@@ -42,13 +42,13 @@ app.get('/get-best-model', (req, res) => {
         arr = data1.split(',').map(Number)
         var array = []
         array = [arr]
-        myMethod(array)
+        sending_coef(array)
         //console.log(array);
     });
     //console.log(array)
 
-    function myMethod(array) {
-        fs.writeFile('localcoef.temporary.txt', '', function () { console.log('done') })
+    function sending_coef(array) {
+        //fs.writeFile('localcoef.temporary.txt', '', function(){console.log('done')})
         services.get_best_model(req, res, array)
     }
 
