@@ -131,29 +131,32 @@ getDoc = async function ()  {
     
         const agg = await db.collection('aggregatedModels').doc(month_doc).set(max_model);
 }
-removing=async function(){
-    const FieldValue = admin.firestore.FieldValue;
-    const getDataAgg_new = db.collection('aggregatedModels').doc(month_doc);
-    var upd = await getDataAgg_new.update({
-        email: FieldValue.delete(),
-        score:FieldValue.delete()
-      });
-    
-}
-// updating=async function(){
-//     const model = db.collection('aggregatedModels').doc(month_doc);
-//     const model_obj = await model.get();
-//     model_data=model_obj.data()
+// removing=async function(){
+//     const FieldValue = admin.firestore.FieldValue;
+//     const getDataAgg_new = db.collection('aggregatedModels').doc(month_doc);
+//     var upd = await getDataAgg_new.update({
+//         email: FieldValue.delete(),
+//         score:FieldValue.delete()
+//       });
 // }
+
 get_best_model=async function(req,res,array){
     const FieldValue = admin.firestore.FieldValue;
     const getDataAgg_new = db.collection('aggregatedModels').doc(month_doc);
     const dataAgg_new = await getDataAgg_new.get();
-    obj=dataAgg_new.data()
-    obj.coef_=array
-    //console.log(obj);
-    res.json(obj)
-    //res.send(obj)
+    //obj=dataAgg_new.data()
+    obj=JSON.parse(JSON.stringify(dataAgg_new.data()))
+    const obj1={
+        "classes_":obj.classes_,
+        "intercept_":obj.intercept_,
+        "n_iter_":obj.n_iter_,
+        "coef_":array
+    }
+    //obj.coef_=array
+    //console.log(obj1);
+    //res.json(obj1)
+    //res.send({"result":"hi"})
+    res.send(obj1)
 }
 
 get_fileDownload=async function(){
@@ -167,5 +170,6 @@ get_fileDownload=async function(){
 }
 module.exports.getDoc=getDoc;
 module.exports.get_best_model=get_best_model;
-module.exports.removing=removing;
+//module.exports.removing=removing;
 module.exports.get_fileDownload=get_fileDownload;
+//module.exports.updating=updating;
